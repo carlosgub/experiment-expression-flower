@@ -28,8 +28,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     compileOnly 'com.google.android.things:androidthings:1.0'
     implementation 'com.google.firebase:firebase-ml-vision:16.0.0'
-    compile 'com.google.android.things.contrib:driver-pwmservo:1.0'
-    compile 'com.google.android.things.contrib:driver-apa102:1.0'
 
 }
 

@@ -19,7 +19,7 @@ package com.example.androidthings.sequences;
 import android.graphics.Color;
 import android.util.Log;
 import com.example.androidthings.Flower;
-import com.example.androidthings.FlowerLEDController;
+
 import java.io.IOException;
 import java.util.Random;
 
@@ -28,7 +28,6 @@ public class IdleSequence extends Sequence {
 
   private static final String TAG = IdleSequence.class.getSimpleName();
   private static final Random random = new Random();
-  private final int[] colors = new int[FlowerLEDController.LED_COUNT];
   private double openingIncrementPerStep = .0075f;
   public IdleSequence(Flower flower, float opening, Runnable sequenceCompletedCallback)
       throws IOException {
@@ -54,22 +53,6 @@ public class IdleSequence extends Sequence {
       }
       flower.setOpening(flower.getOpening() + (float) openingIncrementPerStep);
     }
-    generateRainbowVertical(colors, 6, frame);
-    flower.setLEDs(colors);
     return false;
-  }
-
-  private static void generateRainbowVertical(int[] colors, int top, int frame) {
-    int numColors = 150;
-    float[] hsv0 = {360f * (frame % numColors) / numColors, 1f, 1f};
-    float[] hsv1 = {360f * ((frame + 10) % numColors) / numColors, 1f, 1f};
-
-    for (int i = 0; i < top; i++) {
-      colors[i] = Color.HSVToColor(0, hsv1);
-    }
-
-    for (int i = top; i < colors.length; i++) {
-      colors[i] = Color.HSVToColor(0, hsv0);
-    }
   }
 }

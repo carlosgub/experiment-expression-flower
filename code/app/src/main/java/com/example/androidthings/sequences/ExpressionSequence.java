@@ -29,14 +29,11 @@ public class ExpressionSequence extends Sequence {
   private static final String TAG = ExpressionSequence.class.getSimpleName();
   private static final int TOTAL_STEPS = 35;
 
-  private final float hue;
   private final float opening;
 
   public ExpressionSequence(
-      Flower flower, float hue, float opening, Runnable sequenceCompletedCallback)
-      throws IOException {
+      Flower flower, float opening, Runnable sequenceCompletedCallback){
     super(flower, sequenceCompletedCallback);
-    this.hue = hue;
     this.opening = opening;
   }
 
@@ -54,7 +51,6 @@ public class ExpressionSequence extends Sequence {
     } else {
       flower.setOpening(opening);
     }
-    flower.setHSV(hue, 1f, 1f);
     return frame >= TOTAL_STEPS;
   }
 }

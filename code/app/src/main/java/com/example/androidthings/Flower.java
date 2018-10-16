@@ -19,11 +19,12 @@ package com.example.androidthings;
 import android.graphics.Color;
 import android.support.annotation.IntDef;
 import android.util.Log;
+
 import com.example.androidthings.sequences.ExpressionSequence;
 import com.example.androidthings.sequences.IdleSequence;
 import com.example.androidthings.sequences.RainbowSequence;
 import com.example.androidthings.sequences.Sequence;
-import com.google.android.things.contrib.driver.pwmservo.Servo;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,14 +39,6 @@ public class Flower {
   private static final float PINK_HUE = 314f;
   private static final int DEFAULT_MAX_ANGLE = 50;
 
-  private final Servo motorController;
-  private final FlowerLEDController ledController;
-
-  private int maxAngle;
-
-  private float hue;
-  private float saturation;
-  private float brightness;
   private float opening = 0f;
 
   private boolean running = true;
@@ -75,10 +68,7 @@ public class Flower {
   private @State int currentState = State.UNDEFINED;
   private @State int underlyingState;
 
-  Flower(Servo motorController, FlowerLEDController ledController) throws IOException {
-    this.motorController = motorController;
-    this.ledController = ledController;
-    maxAngle = DEFAULT_MAX_ANGLE;
+  Flower() throws IOException {
     setOpening(1f);
   }
 
@@ -92,24 +82,6 @@ public class Flower {
     return inConfigMode;
   }
 
-  /** Sets the hsv values of the flower. */
-  public void setHSV(float hue, float saturation, float brightness) throws IOException {
-    this.hue = ensureInRange(hue, 0, 359);
-    this.saturation = ensureInRange(saturation, (float) .5, 1);
-    this.brightness = ensureInRange(brightness, 0, 1);
-    ledController.setFlowerHue(this.hue, this.saturation, this.brightness);
-  }
-
-  /** Sets the LEDs of the flower. */
-  public void setLEDs(int[] colors) throws IOException {
-    float[] hsv = new float[3];
-    Color.colorToHSV(colors[0], hsv);
-    this.hue = hsv[0];
-    this.saturation = hsv[1];
-    this.brightness = hsv[2];
-    ledController.setFlowerLEDs(colors);
-  }
-
   /** Sets how open the flower's petals are. */
   public void setOpening(float opening) throws IOException {
     setOpening(opening, false);
@@ -121,7 +93,6 @@ public class Flower {
       return;
     }
     this.opening = ensureInRange(opening, 0, 1);
-    motorController.setAngle(maxAngle * this.opening);
   }
 
   /** Returns the angle the flower is currently opened to. */
@@ -177,10 +148,10 @@ public class Flower {
           sequence = new RainbowSequence(this, .75f, this::onSequenceCompleted);
           break;
         case State.SMILE:
-          sequence = new ExpressionSequence(this, YELLOW_HUE, 1f, this::onSequenceCompleted);
+          sequence = new ExpressionSequence(this, 1f, this::onSequenceCompleted);
           break;
         case State.WINK:
-          sequence = new ExpressionSequence(this, PINK_HUE, .25f, this::onSequenceCompleted);
+          sequence = new ExpressionSequence(this, .25f, this::onSequenceCompleted);
           break;
         case State.IDLE:
           sequence = new IdleSequence(this, opening, this::onSequenceCompleted);

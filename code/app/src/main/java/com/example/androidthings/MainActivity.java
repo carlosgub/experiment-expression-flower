@@ -29,8 +29,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
-import com.google.android.things.contrib.driver.pwmservo.Servo;
+
 import com.google.firebase.FirebaseApp;
+
 import java.io.IOException;
 
 /** Expression flower activity that starts the VideoProcessor, motor, and LEDs. */
@@ -39,10 +40,7 @@ public class MainActivity extends Activity {
   private static final String TAG = MainActivity.class.getSimpleName();
 
   private static final int OVERLAY_RADIUS = 80;
-  private static final String SERVO_PIN = "PWM0";
   private VideoProcessor videoProcessor;
-  private FlowerLEDController ledController;
-  private Servo servo;
   private Flower flower;
   private ImageView overlay;
 
@@ -57,22 +55,7 @@ public class MainActivity extends Activity {
     createOverlayDisplay();
 
     try {
-      ledController = new FlowerLEDController();
-    } catch (IOException e) {
-      throw new RuntimeException("Couldn't set up led controller.", e);
-    }
-    try {
-      servo = new Servo(SERVO_PIN);
-      servo.setPulseDurationRange(0.5, 2.5); // According to the DS3218 servo spec.
-      servo.setAngleRange(0, 180); // According to the DS3218 servo spec.
-      servo.setEnabled(true);
-      Log.i(TAG, "Servo set up complete.");
-    } catch (IOException e) {
-      throw new RuntimeException("Couldn't set up servo.", e);
-    }
-
-    try {
-      flower = new Flower(servo, ledController);
+      flower = new Flower();
     } catch (IOException e) {
       throw new RuntimeException("Couldn't set up flower.", e);
     }

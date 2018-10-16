@@ -38,6 +38,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.example.androidthings.Flower.State;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -135,7 +137,7 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
   VideoProcessor(Flower flower, Context context, ImageView imageView, Looper mainLooper) {
     this.flower = flower;
     FirebaseApp.initializeApp(context);
-    flower.setState(State.IDLE);
+    flower.setState(State.DETECTING);
     setUpImageCapture(context, imageView, mainLooper);
   }
 
@@ -187,8 +189,8 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
             .setTrackingEnabled(true)
             .build();
 
-    idToFace = new ConcurrentHashMap<Integer, FirebaseVisionFace>();
-    currentIdToFace = new ConcurrentHashMap<Integer, FirebaseVisionFace>();
+    idToFace = new ConcurrentHashMap<>();
+    currentIdToFace = new ConcurrentHashMap<>();
 
     removeIdSet = new HashSet<>();
 
@@ -307,16 +309,14 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
         detector
             .detectInImage(firebaseImage)
             .addOnSuccessListener(
-                new OnSuccessListener<List<FirebaseVisionFace>>() {
-                  @Override
-                  public void onSuccess(List<FirebaseVisionFace> faces) {
-                    currentIdToFace.clear();
-                    for (FirebaseVisionFace face : faces) {
-                      idToFace.put(face.getTrackingId(), face);
-                      currentIdToFace.put(face.getTrackingId(), face);
-                    }
-                  }
-                });
+                    faces -> {
+                      Log.d(":)","Se encontro " + faces.size() +" caras");
+                      currentIdToFace.clear();
+                      for (FirebaseVisionFace face : faces) {
+                        idToFace.put(face.getTrackingId(), face);
+                        currentIdToFace.put(face.getTrackingId(), face);
+                      }
+                    });
     canvas.drawBitmap(displayBitmap, 0, 0, null);
 
     synchronized (buffer) {
