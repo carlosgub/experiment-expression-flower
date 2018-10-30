@@ -45,7 +45,9 @@ public class MainActivity extends Activity implements LedInterface {
   private VideoProcessor videoProcessor;
   private Flower flower;
   private ImageView overlay;
-  private Gpio mLedGpio;
+  private Gpio mLedGpioHappy;
+  private Gpio mLedGpioNormal;
+  private Gpio mLedGpioSad;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +68,12 @@ public class MainActivity extends Activity implements LedInterface {
     PeripheralManager pioService=PeripheralManager.getInstance();
     try {
       Log.i(TAG, "Configuring GPIO pins");
-      mLedGpio = pioService.openGpio("BCM6");
-      mLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+      mLedGpioHappy = pioService.openGpio("BCM26");
+      mLedGpioHappy.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+      mLedGpioNormal = pioService.openGpio("BCM6");
+      mLedGpioNormal.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+      mLedGpioSad = pioService.openGpio("BCM5");
+      mLedGpioSad.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
     } catch (IOException e) {
       Log.e(TAG, "Error configuring GPIO pins", e);
     }
@@ -86,9 +92,9 @@ public class MainActivity extends Activity implements LedInterface {
   /**
    * Update the value of the LED output.
    */
-  private void setLedValue(boolean value) {
+  private void setLedValue(boolean value,Gpio led) {
     try {
-      mLedGpio.setValue(value);
+      led.setValue(value);
     } catch (IOException e) {
       Log.e(TAG, "Error updating GPIO value", e);
     }
@@ -137,15 +143,21 @@ public class MainActivity extends Activity implements LedInterface {
   protected void onDestroy() {
     videoProcessor.stop();
 
-    if (mLedGpio != null) {
+    if (mLedGpioHappy != null && mLedGpioNormal !=null && mLedGpioSad !=null) {
       try {
-        mLedGpio.close();
+        mLedGpioHappy.close();
+        mLedGpioNormal.close();
+        mLedGpioSad.close();
       } catch (IOException e) {
         Log.e(TAG, "Error closing LED GPIO", e);
       } finally{
-        mLedGpio = null;
+        mLedGpioHappy = null;
+        mLedGpioNormal=null;
+        mLedGpioSad=null;
       }
-      mLedGpio = null;
+      mLedGpioHappy = null;
+      mLedGpioNormal=null;
+      mLedGpioSad=null;
     }
 
     try {
@@ -157,7 +169,21 @@ public class MainActivity extends Activity implements LedInterface {
   }
 
   @Override
-  public void PersonDetected(boolean estado) {
-    setLedValue(estado);
+  public void PersonHappyDetected(boolean estado) {
+    setLedValue(estado,mLedGpioHappy);
+    setLedValue(!estado,mLedGpioNormal);
+    setLedValue(!estado,mLedGpioSad);
+  }
+  @Override
+  public void PersonNormalDetected(boolean estado) {
+    setLedValue(!estado,mLedGpioHappy);
+    setLedValue(estado,mLedGpioNormal);
+    setLedValue(!estado,mLedGpioSad);
+  }
+  @Override
+  public void PersonSadDetected(boolean estado) {
+    setLedValue(!estado,mLedGpioHappy);
+    setLedValue(!estado,mLedGpioNormal);
+    setLedValue(estado,mLedGpioSad);
   }
 }

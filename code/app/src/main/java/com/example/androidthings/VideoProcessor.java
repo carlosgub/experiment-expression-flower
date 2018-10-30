@@ -310,17 +310,11 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
     }
 
 
-    LedInterface ledInterface = ((MainActivity)mContext);
     result =
         detector
             .detectInImage(firebaseImage)
             .addOnSuccessListener(
                     faces -> {
-                      if(faces.size()>0){
-                        ledInterface.PersonDetected(true);
-                      }else{
-                        ledInterface.PersonDetected(false);
-                      }
                       currentIdToFace.clear();
                       for (FirebaseVisionFace face : faces) {
                         idToFace.put(face.getTrackingId(), face);
@@ -466,7 +460,15 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
         Log.e(TAG, "Unable to set expression state", e);
       }
     }
+    LedInterface ledInterface = ((MainActivity)mContext);
     canvas.drawRect(idToFace.get(id).getBoundingBox(), detectionPaint);
+    if(idToFace.get(id).getSmilingProbability()>=0.7){
+      ledInterface.PersonHappyDetected(true);
+    }else if(idToFace.get(id).getSmilingProbability()>=0.4 && idToFace.get(id).getSmilingProbability()<0.7){
+      ledInterface.PersonNormalDetected(true);
+    }else{
+      ledInterface.PersonSadDetected(true);
+    }
     canvas.drawText(
         String.format("%.2f", idToFace.get(id).getSmilingProbability()),
         idToFace.get(id).getBoundingBox().right,

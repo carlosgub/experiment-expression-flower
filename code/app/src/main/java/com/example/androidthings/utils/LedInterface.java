@@ -1,5 +1,7 @@
 package com.example.androidthings.utils;
 
 public interface LedInterface {
-    void PersonDetected(boolean estado);
+    void PersonHappyDetected(boolean estado);
+    void PersonNormalDetected(boolean estado);
+    void PersonSadDetected(boolean estado);
 }
