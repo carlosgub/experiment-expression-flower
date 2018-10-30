@@ -29,13 +29,15 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
-
+import com.example.androidthings.utils.LedInterface;
+import com.google.android.things.pio.Gpio;
+import com.google.android.things.pio.PeripheralManager;
 import com.google.firebase.FirebaseApp;
 
 import java.io.IOException;
 
 /** Expression flower activity that starts the VideoProcessor, motor, and LEDs. */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements LedInterface {
 
   private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -43,6 +45,7 @@ public class MainActivity extends Activity {
   private VideoProcessor videoProcessor;
   private Flower flower;
   private ImageView overlay;
+  private Gpio mLedGpio;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +63,36 @@ public class MainActivity extends Activity {
       throw new RuntimeException("Couldn't set up flower.", e);
     }
 
+    PeripheralManager pioService=PeripheralManager.getInstance();
+    try {
+      Log.i(TAG, "Configuring GPIO pins");
+      mLedGpio = pioService.openGpio("BCM6");
+      mLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+    } catch (IOException e) {
+      Log.e(TAG, "Error configuring GPIO pins", e);
+    }
+
     videoProcessor =
         new VideoProcessor(flower, this, findViewById(R.id.imageView), getMainLooper());
   }
 
+  private void sleep(int milliseconds){
+    try {
+      Thread.sleep(milliseconds);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+  /**
+   * Update the value of the LED output.
+   */
+  private void setLedValue(boolean value) {
+    try {
+      mLedGpio.setValue(value);
+    } catch (IOException e) {
+      Log.e(TAG, "Error updating GPIO value", e);
+    }
+  }
   /** Draws the overlay for the configuration mode. */
   private void createOverlayDisplay() {
     Bitmap bitmap =
@@ -107,11 +136,28 @@ public class MainActivity extends Activity {
   @Override
   protected void onDestroy() {
     videoProcessor.stop();
+
+    if (mLedGpio != null) {
+      try {
+        mLedGpio.close();
+      } catch (IOException e) {
+        Log.e(TAG, "Error closing LED GPIO", e);
+      } finally{
+        mLedGpio = null;
+      }
+      mLedGpio = null;
+    }
+
     try {
       flower.destroy();
     } catch (IOException e) {
       Log.e(TAG, "Flower was unable to destroy.", e);
     }
     super.onDestroy();
+  }
+
+  @Override
+  public void PersonDetected(boolean estado) {
+    setLedValue(estado);
   }
 }

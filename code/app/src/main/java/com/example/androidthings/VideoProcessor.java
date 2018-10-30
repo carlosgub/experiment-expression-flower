@@ -17,6 +17,7 @@ package com.example.androidthings;
  */
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -41,6 +42,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.androidthings.Flower.State;
+import com.example.androidthings.utils.LedInterface;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -125,6 +127,7 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
   private boolean detectNewFace;
   private Integer priorityId;
   private double closestDistance;
+  private Context mContext;
 
   /**
    * Listener that controls image processing.
@@ -134,7 +137,8 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
     void onAnnotatedFrame(Bitmap bitmap);
   }
 
-  VideoProcessor(Flower flower, Context context, ImageView imageView, Looper mainLooper) {
+  VideoProcessor( Flower flower, Context context, ImageView imageView, Looper mainLooper) {
+    this.mContext = context;
     this.flower = flower;
     FirebaseApp.initializeApp(context);
     flower.setState(State.DETECTING);
@@ -305,12 +309,18 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
       return;
     }
 
+
+    LedInterface ledInterface = ((MainActivity)mContext);
     result =
         detector
             .detectInImage(firebaseImage)
             .addOnSuccessListener(
                     faces -> {
-                      Log.d(":)","Se encontro " + faces.size() +" caras");
+                      if(faces.size()>0){
+                        ledInterface.PersonDetected(true);
+                      }else{
+                        ledInterface.PersonDetected(false);
+                      }
                       currentIdToFace.clear();
                       for (FirebaseVisionFace face : faces) {
                         idToFace.put(face.getTrackingId(), face);
