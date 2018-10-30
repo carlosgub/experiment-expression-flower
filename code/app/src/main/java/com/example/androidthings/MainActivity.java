@@ -186,4 +186,11 @@ public class MainActivity extends Activity implements LedInterface {
     setLedValue(!estado,mLedGpioNormal);
     setLedValue(estado,mLedGpioSad);
   }
+
+    @Override
+    public void noPersonDetected() {
+        setLedValue(false,mLedGpioHappy);
+        setLedValue(false,mLedGpioNormal);
+        setLedValue(false,mLedGpioSad);
+    }
 }

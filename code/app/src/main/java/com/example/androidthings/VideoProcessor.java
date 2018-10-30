@@ -315,6 +315,10 @@ public class VideoProcessor implements ImageReader.OnImageAvailableListener {
             .detectInImage(firebaseImage)
             .addOnSuccessListener(
                     faces -> {
+                      LedInterface ledInterface = ((MainActivity)mContext);
+                      if(faces.size()==0){
+                        ledInterface.noPersonDetected();
+                      }
                       currentIdToFace.clear();
                       for (FirebaseVisionFace face : faces) {
                         idToFace.put(face.getTrackingId(), face);
